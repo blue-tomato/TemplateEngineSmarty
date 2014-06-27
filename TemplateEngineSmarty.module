@@ -1,0 +1,285 @@
+<?php
+require_once(dirname(dirname(__FILE__)) . '/TemplateEngineFactory/TemplateEngine.php');
+require_once(dirname(dirname(__FILE__)) . '/TemplateEngineFactory/TemplateEngineCache.php');
+require_once('smarty/libs/Smarty.class.php');
+
+/**
+ * Class TemplateEngineSmarty
+ *
+ * @author Stefan Wanzenried <stefan.wanzenried@gmail.com>
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2014 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://processwire.com
+ *
+ */
+
+class TemplateEngineSmarty extends TemplateEngine implements Module, ConfigurableModule, TemplateEngineCache
+{
+
+    const SMARTY_VERSION = '3.1.18';
+
+    const COMPILE_DIR = 'TemplateEngineSmarty_compile/';
+    const CACHE_DIR = 'TemplateEngineSmarty_cache/';
+
+    /**
+     * @var Smarty
+     */
+    protected $smarty;
+
+
+    /**
+     * @param string $filename
+     */
+    public function __construct($filename = '')
+    {
+        parent::__construct($filename);
+    }
+
+
+    /**
+     * Initialize module by setting up smarty
+     */
+    public function init()
+    {
+        parent::init();
+        $this->smarty = new Smarty();
+        $this->smarty->setTemplateDir($this->getTemplatesPath());
+        $this->smarty->setCompileDir($this->config->paths->assets . 'cache/' . self::COMPILE_DIR);
+        $this->smarty->setCacheDir($this->config->paths->assets . 'cache/' . self::CACHE_DIR);
+        if ($cache_time = $this->getConfig('caching_lifetime')) {
+            $this->smarty->caching = true;
+            $this->smarty->cache_lifetime = (int) $cache_time;
+        }
+        if ($this->getConfig('api_vars_available')) {
+            foreach (Wire::getFuel() as $name => $object) {
+                if ($name == $this->factory->api_var) continue;
+                $this->set($name, $object);
+            }
+        }
+        if (!$this->getConfig('compile_check')) $this->smarty->compile_check = false;
+        $this->initSmarty($this->smarty);
+    }
+
+
+    /**
+     * Hookable method called after smarty instance is created.
+     * Allows for customizing smarty, e.g. adding modifiers and so on
+     *
+     * @param Smarty $smarty
+     */
+    protected function ___initSmarty(Smarty $smarty) {}
+
+
+    /**
+     * @return array
+     */
+    public static function getDefaultConfig()
+    {
+        $config = parent::getDefaultConfig();
+        return array_merge($config, array(
+            'template_files_suffix' => 'tpl',
+            'caching_lifetime' => '0',
+            'api_vars_available' => 1,
+            'compile_check' => 1,
+        ));
+    }
+
+
+    /**
+     * Set a key/value pair to the template
+     *
+     * @param $key
+     * @param $value
+     */
+    public function set($key, $value)
+    {
+        $this->smarty->assign($key, $value);
+    }
+
+
+    /**
+     * Render markup from template file
+     *
+     * @throws WireException
+     * @return mixed
+     */
+    public function render()
+    {
+        try {
+            return $this->smarty->fetch($this->getFilename(), $this->getCacheId());
+        } catch (Exception $e) {
+            throw new WireException($e->getMessage());
+        }
+    }
+
+
+    /**
+     * @param string $filename
+     */
+    public function setFilename($filename) {
+        $suffix = $this->getConfig('template_files_suffix');
+        if (preg_match("/\.{$suffix}$/", $filename)) {
+            $this->filename = $filename;
+        } else {
+            $this->filename = $filename .  '.' . $suffix;
+        }
+    }
+
+
+    /**
+     * Generate a unique cache-ID.
+     * Cache-ID is generated based on page-id, user language, urlSegments, page numbers and template filename.
+     *
+     * @return string
+     */
+    protected function getCacheId()
+    {
+        $segments = array(
+            $this->getFilename(),
+            wire('page')->id,
+            wire('user')->language->name,
+            wire('input')->urlSegmentStr,
+            wire('input')->pageNum(),
+        );
+        return implode('-', $segments);
+    }
+
+
+    /**
+     * Methods per interfaces Module, ConfigurableModule
+     *
+     */
+
+
+    /**
+     * @return array
+     */
+    public static function getModuleInfo()
+    {
+        return array(
+            'title' => 'Template Engine Smarty',
+            'summary' => 'Smarty templates for the TemplateEngineFactory',
+            'version' => 100,
+            'author' => 'Stefan Wanzenried',
+            'href' => '',
+            'singular' => false,
+            'autoload' => false,
+            'requires' => array('TemplateEngineFactory'),
+        );
+    }
+
+
+    /**
+     * Return an InputfieldWrapper of Inputfields used to configure the class
+     *
+     * @param array $data Array of config values indexed by field name
+     * @return InputfieldWrapper
+     *
+     */
+    public static function getModuleConfigInputfields(array $data)
+    {
+        /** @var Modules $modules */
+        $data = array_merge(self::getDefaultConfig(), $data);
+        $wrapper = parent::getModuleConfigInputfields($data);
+        $modules = wire('modules');
+
+        $f = $modules->get('InputfieldText');
+        $f->label = __('Template files suffix');
+        $f->description = __('File extension of smarty templates.');
+        $f->name = 'template_files_suffix';
+        $f->value = $data['template_files_suffix'];
+        $f->required = 1;
+        $f->columnWidth = 50;
+        $wrapper->append($f);
+
+        $f = $modules->get('InputfieldInteger');
+        $f->label = __('Smarty caching lifetime');
+        $f->description = __('Caching lifetime of template files in seconds. "0" to disable caching.');
+        $f->name = 'caching_lifetime';
+        $f->value = $data['caching_lifetime'];
+        $f->columnWidth = 50;
+        $wrapper->append($f);
+
+        /** @var InputfieldCheckbox $f */
+        $f = $modules->get('InputfieldCheckbox');
+        $f->label = __('Import ProcessWire API variables in Smarty templates');
+        $f->description = __('All API variables (page, input, config etc.) are accessible in smarty, e.g. {$page} for $page');
+        $f->name = 'api_vars_available';
+        if ($data['api_vars_available']) $f->checked = 1;
+        $f->columnWidth = 50;
+        $wrapper->append($f);
+
+        $f = $modules->get('InputfieldCheckbox');
+        $f->label = __("Enable Smarty's compile check for templates");
+        $f->description = __('If enabled, every template file involved with the cache is checked for modification. If modified, the cache is regenerated.');
+        $f->name = 'compile_check';
+        if ($data['compile_check']) $f->checked = 1;
+        $f->columnWidth = 50;
+        $wrapper->append($f);
+
+        return $wrapper;
+    }
+
+
+
+    /**
+     * Methods per interface TemplateEngineCache
+     *
+     */
+
+
+    /**
+     * Get cached output of current template or null if no cache exists
+     *
+     * @return string|null
+     */
+    public function getCache()
+    {
+        return ($this->isCached()) ? $this->render() : null;
+    }
+
+
+    /**
+     * Cache output of current template
+     *
+     */
+    public function storeCache()
+    {
+        // Cache is stored when rendering the page with activated cache, so just trigger render
+        $this->render();
+    }
+
+
+    /**
+     * Clear cache of current template
+     *
+     */
+    public function clearCache()
+    {
+        return $this->smarty->clearCache($this->getFilename(), $this->getCacheId());
+    }
+
+
+    /**
+     * Clear cache completely, also cache of all other pages
+     *
+     */
+    public function clearAllCache()
+    {
+        return $this->smarty->clearAllCache();
+    }
+
+
+    /**
+     * Returns true if a cache for the current template exists
+     *
+     * @return bool
+     */
+    public function isCached()
+    {
+        return $this->smarty->isCached($this->getFilename(), $this->getCacheId());
+    }
+}
