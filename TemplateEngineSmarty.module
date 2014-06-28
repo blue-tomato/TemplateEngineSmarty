@@ -40,11 +40,11 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
 
 
     /**
-     * Initialize module by setting up smarty
+     * Setup Smarty
      */
-    public function init()
+    public function initEngine()
     {
-        parent::init();
+        parent::initEngine();
         $this->smarty = new Smarty();
         $this->smarty->setTemplateDir($this->getTemplatesPath());
         $this->smarty->setCompileDir($this->config->paths->assets . 'cache/' . self::COMPILE_DIR);
@@ -62,15 +62,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         if (!$this->getConfig('compile_check')) $this->smarty->compile_check = false;
         $this->initSmarty($this->smarty);
     }
-
-
-    /**
-     * Hookable method called after smarty instance is created.
-     * Allows for customizing smarty, e.g. adding modifiers and so on
-     *
-     * @param Smarty $smarty
-     */
-    protected function ___initSmarty(Smarty $smarty) {}
 
 
     /**
@@ -127,6 +118,15 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
             $this->filename = $filename .  '.' . $suffix;
         }
     }
+
+
+    /**
+     * Hookable method called after smarty instance is created.
+     * Allows for customizing smarty, e.g. adding modifiers and so on
+     *
+     * @param Smarty $smarty
+     */
+    protected function ___initSmarty(Smarty $smarty) {}
 
 
     /**
