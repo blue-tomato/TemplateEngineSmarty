@@ -44,6 +44,7 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
 
     /**
      * Setup Smarty
+     *
      */
     public function initEngine()
     {
@@ -52,6 +53,8 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         $this->smarty->setTemplateDir($this->getTemplatesPath());
         $this->smarty->setCompileDir($this->config->paths->assets . 'cache/' . self::COMPILE_DIR);
         $this->smarty->setCacheDir($this->config->paths->assets . 'cache/' . self::CACHE_DIR);
+        $this->smarty->_dir_perms = $this->config->chmodDir;
+        $this->smarty->_file_perms = $this->config->chmodFile;
         if ($cache_time = $this->getConfig('caching_lifetime')) {
             $this->smarty->caching = true;
             $this->smarty->cache_lifetime = (int) $cache_time;
@@ -62,7 +65,9 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
                 $this->set($name, $object);
             }
         }
-        if (!$this->getConfig('compile_check')) $this->smarty->compile_check = false;
+        if (!$this->getConfig('compile_check')) {
+            $this->smarty->compile_check = false;
+        }
         $this->initSmarty($this->smarty);
     }
 
@@ -142,10 +147,10 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
     {
         $segments = array(
             $this->getFilename(),
-            wire('page')->id,
-            wire('user')->language->name,
-            wire('input')->urlSegmentStr,
-            wire('input')->pageNum(),
+            $this->wire('page')->id,
+            $this->wire('user')->language->name,
+            $this->wire('input')->urlSegmentStr,
+            $this->wire('input')->pageNum(),
         );
         return implode('-', $segments);
     }
@@ -262,7 +267,9 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
      */
     public function clearCache()
     {
-        return $this->smarty->clearCache($this->getFilename(), $this->getCacheId());
+        if (is_dir($this->config->paths->assets . 'cache/' . self::CACHE_DIR)) {
+            return $this->smarty->clearCache($this->getFilename(), $this->getCacheId());
+        }
     }
 
 
@@ -272,7 +279,9 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
      */
     public function clearAllCache()
     {
-        return $this->smarty->clearAllCache();
+        if (is_dir($this->config->paths->assets . 'cache/' . self::CACHE_DIR)) {
+            return $this->smarty->clearAllCache();
+        }
     }
 
 
