@@ -51,17 +51,15 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         parent::initEngine();
         $this->smarty = new Smarty();
         $this->smarty->setTemplateDir($this->getTemplatesPath());
-        $this->smarty->setCompileDir($this->config->paths->assets . 'cache/' . self::COMPILE_DIR);
-        $this->smarty->setCacheDir($this->config->paths->assets . 'cache/' . self::CACHE_DIR);
-        $this->smarty->_dir_perms = $this->config->chmodDir;
-        $this->smarty->_file_perms = $this->config->chmodFile;
+        $this->smarty->setCompileDir($this->wire('config')->paths->assets . 'cache/' . self::COMPILE_DIR);
+        $this->smarty->setCacheDir($this->wire('config')->paths->assets . 'cache/' . self::CACHE_DIR);
         if ($cache_time = $this->getConfig('caching_lifetime')) {
             $this->smarty->caching = true;
             $this->smarty->cache_lifetime = (int) $cache_time;
         }
         if ($this->getConfig('api_vars_available')) {
             foreach (Wire::getFuel() as $name => $object) {
-                if ($name == $this->factory->api_var) continue;
+                if ($name == $this->factory->get('api_var')) continue;
                 $this->set($name, $object);
             }
         }
@@ -95,7 +93,9 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
      */
     public function set($key, $value)
     {
-        $this->smarty->assign($key, $value);
+        if ($this->smarty !== null) {
+            $this->smarty->assign($key, $value);
+        }
     }
 
 
@@ -125,6 +125,17 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         } else {
             $this->filename = $filename .  '.' . $suffix;
         }
+    }
+
+
+    /**
+     * Clear cache files when uninstalling module
+     */
+    public function uninstall()
+    {
+        parent::uninstall();
+        wireRmdir($this->wire('config')->paths->assets . 'cache/' . self::COMPILE_DIR, true);
+        wireRmdir($this->wire('config')->paths->assets . 'cache/' . self::CACHE_DIR, true);
     }
 
 
@@ -200,7 +211,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         $f->name = 'template_files_suffix';
         $f->value = $data['template_files_suffix'];
         $f->required = 1;
-        $f->columnWidth = 50;
         $wrapper->append($f);
 
         $f = $modules->get('InputfieldInteger');
@@ -208,7 +218,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         $f->description = __('Caching lifetime of template files in seconds. "0" to disable caching.');
         $f->name = 'caching_lifetime';
         $f->value = $data['caching_lifetime'];
-        $f->columnWidth = 50;
         $wrapper->append($f);
 
         /** @var InputfieldCheckbox $f */
@@ -217,7 +226,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         $f->description = __('All API variables (page, input, config etc.) are accessible in smarty, e.g. {$page} for $page');
         $f->name = 'api_vars_available';
         if ($data['api_vars_available']) $f->checked = 1;
-        $f->columnWidth = 50;
         $wrapper->append($f);
 
         $f = $modules->get('InputfieldCheckbox');
@@ -225,7 +233,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         $f->description = __('If enabled, every template file involved with the cache is checked for modification. If modified, the cache is regenerated.');
         $f->name = 'compile_check';
         if ($data['compile_check']) $f->checked = 1;
-        $f->columnWidth = 50;
         $wrapper->append($f);
 
         return $wrapper;
