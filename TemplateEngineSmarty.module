@@ -39,9 +39,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
     }
 
 
-    public function init() {}
-
-
     /**
      * Setup Smarty
      *
