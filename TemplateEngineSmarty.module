@@ -93,9 +93,7 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
      */
     public function set($key, $value)
     {
-        if ($this->smarty !== null) {
-            $this->smarty->assign($key, $value);
-        }
+        $this->smarty->assign($key, $value);
     }
 
 
