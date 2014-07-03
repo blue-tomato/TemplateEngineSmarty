@@ -7,6 +7,8 @@ Install the module just like any other ProcessWire module. Check out the followi
 
 This module requires TemplateEngineFactory: https://github.com/wanze/TemplateEngineFactory
 
+After installing, don't forget to enable Smarty as engine in the TemplateEngineFactory module's settings.
+
 ## Configuration
 * **Path to templates** Path to folder where you want to store your Smarty template files.
 * **Template files suffix** The suffix of the template files, default is *tpl*.
@@ -36,7 +38,7 @@ First of all, a global template file is created containing the main markup of th
 <nav>
 <ul>
 {foreach $nav_items as $p}
-  <li{if $p->id == $page->id} class="active"><a href="{$p->url}">{$p->title}</a></li>
+  <li{if $p->id == $page->id} class="active"{/if}><a href="{$p->url}">{$p->title}</a></li>
 {/foreach}
 </ul>
 </nav>
@@ -59,7 +61,7 @@ Notice that there are three blocks defined. Blocks *head* and *javascript* are e
 
 ### Using a global controller
 
-There exist some variables in our global template that should always be passed to the template, namely *{$browser_title}* and *{$nav_items}*. The easiest way to achieve this is by enabling  *$config->prependTemplateFile* in the /site/config.php file. If enabled, we now have a controller file that is always prepended to the more specific controllers.
+There exist some variables in our global template that should always be passed to the template, namely *{$browser_title}* and *{$nav_items}*. The easiest way to achieve this is by enabling  *$config->prependTemplateFile* in */site/config.php*. If enabled, we now have a controller file that is always prepended to the more "normal" controllers.
 
 ```php
 // In controller file _init.php, global logic
@@ -72,7 +74,7 @@ if ($page->template == 'home') {
 $view->set('browser_title, $browser_title);
 
 // Collect navigation pages
-$view->set('nav_items', $pages->get('/')->children("name!=foo"));
+$view->set('nav_items', $pages->get("/")->children("name!=foo"));
 ```
 
 ### Example of controller and derived template file
