@@ -4,9 +4,11 @@ require_once(dirname(dirname(__FILE__)) . '/TemplateEngineFactory/TemplateEngine
 require_once('smarty/libs/Smarty.class.php');
 
 /**
- * Class TemplateEngineSmarty
+ * TemplateEngineSmarty
  *
  * @author Stefan Wanzenried <stefan.wanzenried@gmail.com>
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License, version 2
+ * @version 1.0.1
  *
  * ProcessWire 2.x
  * Copyright (C) 2014 by Ryan Cramer
@@ -15,7 +17,6 @@ require_once('smarty/libs/Smarty.class.php');
  * http://processwire.com
  *
  */
-
 class TemplateEngineSmarty extends TemplateEngine implements Module, ConfigurableModule, TemplateEngineCache
 {
 
@@ -45,14 +46,13 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
      */
     public function initEngine()
     {
-        parent::initEngine();
         $this->smarty = new Smarty();
         $this->smarty->setTemplateDir($this->getTemplatesPath());
         $this->smarty->setCompileDir($this->wire('config')->paths->assets . 'cache/' . self::COMPILE_DIR);
         $this->smarty->setCacheDir($this->wire('config')->paths->assets . 'cache/' . self::CACHE_DIR);
         if ($cache_time = $this->getConfig('caching_lifetime')) {
             $this->smarty->caching = true;
-            $this->smarty->cache_lifetime = (int) $cache_time;
+            $this->smarty->cache_lifetime = (int)$cache_time;
         }
         if ($this->getConfig('api_vars_available')) {
             foreach (Wire::getFuel() as $name => $object) {
@@ -111,19 +111,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
 
 
     /**
-     * @param string $filename
-     */
-    public function setFilename($filename) {
-        $suffix = $this->getConfig('template_files_suffix');
-        if (preg_match("/\.{$suffix}$/", $filename)) {
-            $this->filename = $filename;
-        } else {
-            $this->filename = $filename .  '.' . $suffix;
-        }
-    }
-
-
-    /**
      * Clear cache files when uninstalling module
      */
     public function uninstall()
@@ -176,9 +163,9 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         return array(
             'title' => 'Template Engine Smarty',
             'summary' => 'Smarty templates for the TemplateEngineFactory',
-            'version' => 100,
-            'author' => 'Stefan Wanzenried',
-            'href' => '',
+            'version' => 101,
+            'author' => 'Stefan Wanzenried (Wanze)',
+            'href' => 'https://processwire.com/talk/topic/6834-module-smarty-for-the-templateenginefactory/',
             'singular' => false,
             'autoload' => false,
             'requires' => array('TemplateEngineFactory'),
@@ -199,14 +186,6 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
         $data = array_merge(self::getDefaultConfig(), $data);
         $wrapper = parent::getModuleConfigInputfields($data);
         $modules = wire('modules');
-
-        $f = $modules->get('InputfieldText');
-        $f->label = __('Template files suffix');
-        $f->description = __('File extension of smarty templates.');
-        $f->name = 'template_files_suffix';
-        $f->value = $data['template_files_suffix'];
-        $f->required = 1;
-        $wrapper->append($f);
 
         $f = $modules->get('InputfieldInteger');
         $f->label = __('Smarty caching lifetime');
