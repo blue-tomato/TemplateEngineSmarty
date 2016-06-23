@@ -1,18 +1,17 @@
 <?php
 /**
  * Smarty Internal Plugin Compile Function Plugin
- *
  * Compiles code for the execution of function plugin
  *
- * @package Smarty
+ * @package    Smarty
  * @subpackage Compiler
- * @author Uwe Tews
+ * @author     Uwe Tews
  */
 
 /**
  * Smarty Internal Plugin Compile Function Plugin Class
  *
- * @package Smarty
+ * @package    Smarty
  * @subpackage Compiler
  */
 class Smarty_Internal_Compile_Private_Function_Plugin extends Smarty_Internal_CompileBase
@@ -24,6 +23,7 @@ class Smarty_Internal_Compile_Private_Function_Plugin extends Smarty_Internal_Co
      * @see Smarty_Internal_CompileBase
      */
     public $required_attributes = array();
+
     /**
      * Attribute definition: Overwrites base class.
      *
@@ -35,14 +35,15 @@ class Smarty_Internal_Compile_Private_Function_Plugin extends Smarty_Internal_Co
     /**
      * Compiles code for the execution of function plugin
      *
-     * @param  array  $args      array with attributes from parser
-     * @param  object $compiler  compiler object
+     * @param  array                                $args     array with attributes from parser
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
      * @param  array  $parameter array with compilation parameter
      * @param  string $tag       name of function plugin
-     * @param  string $function  PHP function name
+     * @param  string                               $function PHP function name
+     *
      * @return string compiled code
      */
-    public function compile($args, $compiler, $parameter, $tag, $function)
+    public function compile($args, Smarty_Internal_TemplateCompilerBase  $compiler, $parameter, $tag, $function)
     {
         // This tag does create output
         $compiler->has_output = true;
@@ -68,5 +69,4 @@ class Smarty_Internal_Compile_Private_Function_Plugin extends Smarty_Internal_Co
 
         return $output;
     }
-
 }
