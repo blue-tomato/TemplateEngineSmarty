@@ -272,4 +272,14 @@ class TemplateEngineSmarty extends TemplateEngine implements Module, Configurabl
     {
         return $this->smarty->isCached($this->getFilename(), $this->getCacheId());
     }
+
+
+
+    /**
+     * add Smarty Plugin after init
+     */
+    public function registerPlugin($type = "function", $name, $func)
+    {
+      return $this->smarty->registerPlugin($type, $name, $func);
+    }
 }
