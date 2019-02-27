@@ -33,9 +33,9 @@ pass the `--no-dev` flag to omit autoloading any unnecessary test dependencies!.
 
 The module offers the following configuration:
 
-* **`Template files suffix`** The suffix of the Twig template files, defaults to `tpl`.
+* **`Template files suffix`** The suffix of the Smarty template files, defaults to `tpl`.
 * **`Provide ProcessWire API variables in Smarty templates`** API variables (`$pages`, `$input`, `$config`...)
-are accessible in Twig,
+are accessible in Smarty,
 e.g. `{{ config }}` for the config API variable.
 * **`Debug`** If enabled, Smarty outputs debug information.
 * **`Auto reload templates (recompile)`** If enabled, templates are recompiled whenever the source code changes.
