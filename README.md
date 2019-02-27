@@ -1,108 +1,73 @@
-TemplateEngineSmarty
-====================
-ProcessWire module adding Smarty templates to the TemplateEngineFactory.
+# TemplateEngineTwig
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![ProcessWire 3](https://img.shields.io/badge/ProcessWire-3.x-orange.svg)](https://github.com/processwire/processwire)
+
+A ProcessWire module adding Smarty to the [TemplateEngineFactory](https://github.com/wanze/TemplateEngineFactory).
+
+## Requirements
+
+* ProcessWire `3.0` or newer
+* TemplateEngineFactory `2.0` or newer
+* PHP `7.0` or newer
+* Composer
+
+> The `1.x` version of this module is available on the [1.x branch](https://github.com/blue-tomato/TemplateEngineSmarty/tree/1.x).
+Use this version if you still use _TemplateEngineFactory_ `1.x`.  
 
 ## Installation
-Install the module just like any other ProcessWire module. Check out the following guide: http://modules.processwire.com/install-uninstall/
 
-This module requires TemplateEngineFactory: https://github.com/wanze/TemplateEngineFactory
+Execute the following command in the root directory of your ProcessWire installation:
 
-After installing, don't forget to enable Smarty as engine in the TemplateEngineFactory module's settings.
+```
+composer require blue-tomato/template-engine-smarty:^2.0
+```
+
+This will install the _TemplateEngineSmarty_ and _TemplateEngineFactory_ modules in one step. Afterwards, don't forget
+to enable Smarty as engine in the _TemplateEngineFactory_ module's configuration.
+
+> ℹ️ This module includes test dependencies. If you are installing on production with `composer install`, make sure to
+pass the `--no-dev` flag to omit autoloading any unnecessary test dependencies!.
 
 ## Configuration
-* **Path to templates** Path to folder where you want to store your Smarty template files.
-* **Template files suffix** The suffix of the template files, default is *tpl*.
-* **Smarty caching lifetime** Caching time in seconds for smarty templates, enter 0 to deactivate cache.
-* **Import ProcessWire API variables in Smarty template** If checked, any API variable is accessible inside the Smarty templates, for example *{$page}* refers to the current page.
-* **Enable Smarty's compile check for template** If activated, the module checks if template files were modified. If this is the case, any compiled templates or cache files are cleared before rendering the template.
 
-## Best practices
-Smarty offers a nice feature called *Template inheritance*, see: http://www.smarty.net/inheritance
-Here is an example how you could use this feature in combination with the TemplateEngineFactory and ProcessWire:
+The module offers the following configuration:
 
-### Main template file
+* **`Template files suffix`** The suffix of the Twig template files, defaults to `tpl`.
+* **`Provide ProcessWire API variables in Smarty templates`** API variables (`$pages`, `$input`, `$config`...)
+are accessible in Twig,
+e.g. `{{ config }}` for the config API variable.
+* **`Debug`** If enabled, Smarty outputs debug information.
+* **`Auto reload templates (recompile)`** If enabled, templates are recompiled whenever the source code changes.
+* **`Error Reporting`** If set to `false`, Smarty will silently ignore invalid variables (variables and
+or attributes/methods that do not exist) and replace them with a `null` value. When set to `true`,
+Smarty throws an exception instead
+* **`Escape HTML`** If enabled, templates will auto-escape variables. If you are using ProcessWire
+textformatters to escape field values, do not enable this feature.
 
-First of all, a global template file is created containing the main markup of the site. Other template files will extend from this file and overwrite the provided blocks, if necessary.
+## Extending Smarty
 
-```html
-<!--Global template file: /site/templates/smarty/template.tpl-->
-<html>
-<head>
-  <title>{$browser_title}</title>  
-  <link rel="stylesheet" type="text/css" href="{$config->urls->templates}styles/main.css">
-  
-  {block name="head"}{/block}
+It is possible to extend Smarty after it has been initialized by the module. Hook the method `TemplateEngineSmarty::initSmarty`
+to register custom functions, extensions, global variables, filters etc.
 
-</head>
-<body>
-<nav>
-<ul>
-{foreach $nav_items as $p}
-  <li{if $p->id == $page->id} class="active"{/if}><a href="{$p->url}">{$p->title}</a></li>
-{/foreach}
-</ul>
-</nav>
-<div id="content">
-
-  {block name="content"}
-  <h1>{$page->title}</h1>
-  {$page->body}
-  {/block}
-
-</div>
-<script type="javascript" src="{$config->urls->templates}js/main.js"></script>
-
-{block name="javascript"}{/block}
-
-</body>
-</html>
-```
-Notice that there are three blocks defined. Blocks *head* and *javascript* are empty and can be used by derived templates to add specific CSS or javascript stuff. Furthermore the *content* block outputs by default the page's title and body, but another template may want to display other informations there and thus overwrite the block.
-
-### Using a global controller
-
-There exist some variables in our global template that should always be passed to the template, namely *{$browser_title}* and *{$nav_items}*. The easiest way to achieve this is by enabling  *$config->prependTemplateFile* in */site/config.php*. If enabled, we now have a controller file that is always prepended to the more "normal" controllers.
+Here is an example how you can use the provided hook to attach a custom function.
 
 ```php
-// In controller file _init.php, global logic
+function foo_function($params, $smarty) {
+  return 'bar';
+};
 
-$browser_title = $page->title;
-if ($page->template == 'home') {
-  $browser_title = 'Home: ' . $page->title;
-}
-// Pass title to template
-$view->set('browser_title, $browser_title);
+wire()->addHookAfter('TemplateEngineSmarty::initSmarty', function (HookEvent $event) {
+    /** @var \Smarty $smarty */
+    $smarty = $event->arguments('smarty');
 
-// Collect navigation pages
-$view->set('nav_items', $pages->get("/")->children("name!=foo"));
+    $smarty->registerPlugin("function", "foo", "foo_function");
+});
+
+// ... and then use it anywhere in a Smarty template:
+
+{foo}
 ```
 
-### Example of controller and derived template file
-Assume that the *products* template wants to display a list of products in the content block, not the title and body. Here's an example how the template file and controller could look like if a product-page is served by ProcessWire:
-```html
-<!-- In file: /site/templates/smarty/products.tpl -->
-
-{extends file="template.tpl"}
-
-{block name="content"}
-  <h1>Check out the following products</h1>
-  <ul>
-  {foreach $products as $p}
-    <li>{$p->title}</li>
-  {/foreach}
-  </ul>
-{/block}
-
-{block name="javascript"}
-<script type="javascript" src="{$config->urls->templates}js/products.js"></script>
-{/block}
-
-```
-The template file overwrites the content block and displays some products. Also an additional javascript file is loaded before the closing body tag. All the other markup is provided by the global template file! What's left is to pass the products from the corresponding controller to the template:
-```php
-// In file: /site/templates/products.php
-
-$products = $pages->find('template=product,active=1');
-$view->set('products', $products);
-```
-This is it :)
+> The above hook can be put in your `site/init.php` file. If you prefer to use modules, put it into the module's `init()`
+method and make sure that the module is auto loaded.
