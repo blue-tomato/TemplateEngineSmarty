@@ -38,7 +38,7 @@ The module offers the following configuration:
 are accessible in Smarty,
 e.g. `{{ config }}` for the config API variable.
 * **`Debug`** If enabled, Smarty outputs debug information.
-* **`Auto reload templates (recompile)`** If enabled, templates are recompiled whenever the source code changes.
+* **`Compile Check`** If enabled, templates are recompiled whenever the source code changes.
 * **`Error Reporting`** If set to `false`, Smarty will silently ignore invalid variables (variables and
 or attributes/methods that do not exist) and replace them with a `null` value. When set to `true`,
 Smarty throws an exception instead
