@@ -27,10 +27,9 @@ class TemplateEngineSmarty extends TemplateEngineBase
 
         try {
             return $this->getSmarty()->fetch($template, $this->getCacheId());
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new WireException($e->getMessage());
         }
-
     }
 
     /**
@@ -60,18 +59,22 @@ class TemplateEngineSmarty extends TemplateEngineBase
         $this->smarty->setCompileDir($this->wire('config')->paths->assets . 'cache/' . self::COMPILE_DIR);
         $this->smarty->setCacheDir($this->wire('config')->paths->assets . 'cache/' . self::CACHE_DIR);
 
-        if ($this->moduleConfig['escape_html'] == true){
-          $this->smarty->escape_html = true;
+        if ($this->moduleConfig['caching'] === true) {
+            $this->smarty->caching = true;
         }
 
-        if ($this->moduleConfig['compile_check'] == true){
-          $this->smarty->compile_check = true;
+        if ($this->moduleConfig['escape_html'] === true) {
+            $this->smarty->escape_html = true;
         }
 
-        if ($this->moduleConfig['error_reporting'] == true){
-          $this->smarty->error_reporting = true ;
+        if ($this->moduleConfig['compile_check'] === true) {
+            $this->smarty->compile_check = true;
+        }
+
+        if ($this->moduleConfig['error_reporting'] === true) {
+            $this->smarty->error_reporting = true;
         } else {
-          $this->smarty->error_reporting = E_ALL ^ E_NOTICE;
+            $this->smarty->error_reporting = E_ALL ^ E_NOTICE;
         }
 
         $this->initSmarty($this->smarty);
@@ -120,15 +123,15 @@ class TemplateEngineSmarty extends TemplateEngineBase
     private function assignData(array $data)
     {
         if ($this->moduleConfig['api_vars_available']) {
-          foreach ($this->wire('all') as $name => $object) {
-              $this->set($name, $object);
-          }
+            foreach ($this->wire('all') as $name => $object) {
+                $this->set($name, $object);
+            }
         }
 
         if (isset($data)) {
-          foreach ($data as $name => $object) {
-             $this->set($name, $object);
-          }
+            foreach ($data as $name => $object) {
+                $this->set($name, $object);
+            }
         }
     }
 
@@ -170,5 +173,4 @@ class TemplateEngineSmarty extends TemplateEngineBase
 
         return implode('-', $segments);
     }
-
 }
