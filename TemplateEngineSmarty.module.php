@@ -37,7 +37,7 @@ class TemplateEngineSmarty extends WireData implements Module, ConfigurableModul
         return [
             'title' => 'Template Engine Smarty',
             'summary' => 'Smarty templates for the TemplateEngineFactory',
-            'version' => 200,
+            'version' => 210,
             'author' => 'Blue Tomato',
             'href' => 'https://processwire.com/talk/topic/6834-module-smarty-for-the-templateenginefactory/',
             'singular' => true,
@@ -108,6 +108,13 @@ class TemplateEngineSmarty extends WireData implements Module, ConfigurableModul
         $wrapper->append($field);
 
         /** @var \ProcessWire\InputfieldCheckbox $field */
+        $field = $modules->get('InputfieldCheckbox');
+        $field->label = __('Enable Smarty\'s template chaching');
+        $field->description = __('If enabled, every rendered result is cached for 1 hour');
+        $field->name = 'caching';
+        $field->checked = (bool) $data['caching'];
+        $wrapper->append($field);
+
         $field = $modules->get('InputfieldCheckbox');
         $field->label = __('Enable Smarty\'s compile check for templates');
         $field->description = __('If enabled, every template file involved with the cache is checked for modification. If modified, the cache is regenerated.');
