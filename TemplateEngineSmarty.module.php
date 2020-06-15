@@ -15,6 +15,7 @@ class TemplateEngineSmarty extends WireData implements Module, ConfigurableModul
     private static $defaultConfig = [
         'template_files_suffix' => 'tpl',
         'api_vars_available' => 1,
+        'caching' => 0,
         'compile_check' => 1,
         'escape_html' => 0,
         'error_reporting' => 0,
