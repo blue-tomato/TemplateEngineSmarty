@@ -2,6 +2,7 @@
 
 namespace TemplateEngineSmarty;
 
+use ProcessWire\WireException;
 use TemplateEngineFactory\TemplateEngineBase;
 
 /**
