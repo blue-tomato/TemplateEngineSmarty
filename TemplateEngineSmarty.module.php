@@ -91,7 +91,7 @@ class TemplateEngineSmarty extends WireData implements Module, ConfigurableModul
 
         $field = $modules->get('InputfieldCheckbox');
         $field->label = __('Provide ProcessWire API variables in Smarty templates');
-        $field->description = __('API variables (`$pages`, `$input`, `$config`...) are accessible in Smarty, e.g. `{{ config }}` for the config API variable.');
+        $field->description = __('API variables (`$pages`, `$input`, `$config`...) are accessible in Smarty, e.g. `{$config}` for the config API variable.');
         $field->name = 'api_vars_available';
         $field->checked = (bool) $data['api_vars_available'];
         $wrapper->append($field);
