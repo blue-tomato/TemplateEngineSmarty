@@ -38,7 +38,7 @@ class TemplateEngineSmarty extends WireData implements Module, ConfigurableModul
         return [
             'title' => 'Template Engine Smarty',
             'summary' => 'Smarty templates for the TemplateEngineFactory',
-            'version' => 210,
+            'version' => 220,
             'author' => 'Blue Tomato',
             'href' => 'https://processwire.com/talk/topic/6834-module-smarty-for-the-templateenginefactory/',
             'singular' => true,
