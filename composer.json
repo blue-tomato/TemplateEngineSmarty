@@ -1,6 +1,9 @@
 {
     "name": "blue-tomato/template-engine-smarty",
-    "type": "pw-module",
+    "type": "processwire-module",
+    "extra": {
+        "installer-name": "TemplateEngineSmarty"
+    },
     "description": "ProcessWire module adding Smarty to the TemplateEngineFactory",
     "keywords": [ "smarty-engine", "smarty", "processwire"],
     "homepage": "https://github.com/blue-tomato/TemplateEngineSmarty",
@@ -18,7 +21,7 @@
     ],
     "require": {
         "php": ">=7.0",
-        "hari/pw-module": "~1.0",
+        "composer/installers": "~1.0",
         "smarty/smarty": "~3.1",
         "wanze/template-engine-factory": "^2.0"
     },
