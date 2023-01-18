@@ -149,7 +149,7 @@ class TemplateEngineSmarty extends TemplateEngineBase
 
         $normalizedTemplate = ltrim($template, DIRECTORY_SEPARATOR);
 
-        if (!preg_match("/\.${suffix}$/", $template)) {
+        if (!preg_match("/\.{$suffix}$/", $template)) {
             return $normalizedTemplate . sprintf('.%s', $suffix);
         }
 
